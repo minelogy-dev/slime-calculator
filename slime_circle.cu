@@ -275,15 +275,17 @@ int main(int argc, char* argv[]) {
     CUDA_CHECK(cudaMallocHost((void**)&h_z_new, sizeof(int64_t) * BATCH_SIZE));
     CUDA_CHECK(cudaMallocHost((void**)&h_output, sizeof(int64_t) * BATCH_SIZE * sizeX * sizeZ));
     double dis;
+    char line[4096];
     while (true) {
+        fgets(line, sizeof(line), t);
         int ret = fscanf(t, "%lld,%lld,%lld,%lf", &x, &z, &count, &dis);
-        printf("%lld,%lld,%lld,%lf\n", x, z, count, dis);
-        if (ret == 4) {  // x与z为区域左上角标识
+        //printf("%lld,%lld,%lld,%lf\n", x, z, count, dis);
+        if (ret >= 3) {  // x与z为区域左上角标识
             h_x_new[task_counter] = x >> 4;
             h_z_new[task_counter] = z >> 4;
             task_counter++;
         }
-        bool should_process = (ret != 4) || (task_counter == BATCH_SIZE);
+        bool should_process = (ret < 3) || (task_counter == BATCH_SIZE);
         if (should_process && task_counter > 0) {
             if (!is_first_batch) {
                 cudaDeviceSynchronize();
@@ -294,7 +296,7 @@ int main(int argc, char* argv[]) {
             cudaMemcpy(d_x, h_x_new, task_counter * sizeof(int64_t), cudaMemcpyHostToDevice);
             cudaMemcpy(d_z, h_z_new, task_counter * sizeof(int64_t), cudaMemcpyHostToDevice);
 
-            printf("%lld %lld %lld %lld %lld\n", DATA_X, DATA_Z, radius, seed, task_counter);
+            //printf("%lld %lld %lld %lld %lld\n", DATA_X, DATA_Z, radius, seed, task_counter);
 
             int threads_y = 64;  // 可调，建议 32~128
             dim3 block_prefix(1, threads_y, 1);
@@ -356,7 +358,7 @@ int main(int argc, char* argv[]) {
             processed_cnt += last_batch_cnt;
             printf("Finished:%d\n", processed_cnt);
         }
-        if (ret != 4) break;
+        if (ret < 3) break;
     }
     if (last_batch_cnt > 0) {
         // 等待 GPU 完成最后一批
@@ -374,9 +376,10 @@ int main(int argc, char* argv[]) {
 
     fclose(t);
     t = fopen(argv[6], "w");
+    fprintf(t, "x,z,slime_count\n");
     if (ans.size() != 0) {
         Record r_l = ans[0];
-        fprintf(t, "%lld,%lld,%lld\n", r_l.x, r_l.z, r_l.value);
+        fprintf(t, "%lld,%lld,%lld\n", r_l.x * 16, r_l.z * 16, r_l.value);
         for (Record r : ans) {
             if (r_l.x == r.x && r_l.z == r.z && r_l.value == r.value) continue;
             r_l = r;
