@@ -23,44 +23,31 @@ jobs:
           - os: windows-latest
             artifact_name: windows-x64
             ext: '.exe'
-          - os: macos-latest
-            artifact_name: macos-x64
-            ext: ''
-
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup CUDA
-        if: matrix.os != 'macos-latest'
-        uses: Jimver/cuda-toolkit@v0.2
+        uses: Jimver/cuda-toolkit@v0.2.35
+        id: cuda-toolkit
         with:
-          cuda: '12.4'
+          cuda: '13.2.0'
 
-      - name: Install MinGW (Windows)
+      - name: Verify CUDA
+        run: nvcc -V
+
+      - name: Setup MSVC (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install mingw -y --no-progress
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          gcc -o slime_cmp slime_cmp.c -lm -O3
-          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH
-          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          gcc -o slime_cmp.exe slime_cmp.c -O3
+          cl /O2 /Fe:slime_cmp.exe slime_cmp.c
           nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH
           nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH
-
-      - name: Build (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          gcc -o slime_cmp slime_cmp.c -lm -O3
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
