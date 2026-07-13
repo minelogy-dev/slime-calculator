@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  CUDA_ARCH: -arch=all-major
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: linux-x64
+            ext: ''
+          - os: windows-latest
+            artifact_name: windows-x64
+            ext: '.exe'
+          - os: macos-latest
+            artifact_name: macos-x64
+            ext: ''
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup CUDA
+        if: matrix.os != 'macos-latest'
+        uses: Jimver/cuda-toolkit@v0.2
+        with:
+          cuda: '12.4'
+
+      - name: Install MinGW (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install mingw -y --no-progress
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          gcc -o slime_cmp slime_cmp.c -lm -O3
+          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH
+          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          gcc -o slime_cmp.exe slime_cmp.c -O3
+          nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH
+          nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH
+
+      - name: Build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          gcc -o slime_cmp slime_cmp.c -lm -O3
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slime-calculator-${{ matrix.artifact_name }}
+          path: |
+            slime_cmp${{ matrix.ext }}
+            slime_main${{ matrix.ext }}
+            slime_circle${{ matrix.ext }}
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
