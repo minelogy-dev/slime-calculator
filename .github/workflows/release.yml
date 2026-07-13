@@ -46,8 +46,8 @@ jobs:
         shell: pwsh
         run: |
           cl /O2 /Fe:slime_cmp.exe slime_cmp.c
-          nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH
-          nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH
+          nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
+          nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
           
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest'
