@@ -48,7 +48,14 @@ jobs:
           cl /O2 /Fe:slime_cmp.exe slime_cmp.c
           nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH
           nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH
-
+          
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          gcc -o slime_cmp slime_cmp.c -lm -O3
+          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH
+          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH
+          
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
