@@ -18,54 +18,94 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: linux-x64
-            ext: ""
+            artifact_name: slime_calculator-linux-amd64
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            artifact_name: slime_calculator-linux-arm64
+            arch: arm64
           - os: windows-latest
-            artifact_name: windows-x64
-            ext: ".exe"
+            artifact_name: slime_calculator-windows-amd64
+            arch: amd64
+          - os: windows-11-arm
+            artifact_name: slime_calculator-windows-arm64
+            arch: arm64
+
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup CUDA
+      - name: Setup CUDA (x86_64)
+        if: matrix.arch == 'amd64'
         uses: Jimver/cuda-toolkit@v0.2.35
         id: cuda-toolkit
         with:
           cuda: "13.2.0"
 
       - name: Verify CUDA
+        if: matrix.arch == 'amd64'
         run: nvcc -V
 
+      - name: Setup CUDA (Linux ARM64)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nvidia-cuda-toolkit
+
       - name: Setup MSVC (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' || matrix.os == 'windows-11-arm'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
+        run: |
+          gcc -o slime_cmp slime_cmp.c -lm -O3
+          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
+          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
 
+      - name: Build (Windows amd64)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           cl /O2 /Fe:slime_cmp.exe slime_cmp.c
           nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
           nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
 
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build (Windows ARM64)
+        if: matrix.os == 'windows-11-arm'
+        shell: pwsh
         run: |
-          gcc -o slime_cmp slime_cmp.c -lm -O3
-          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH
-          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH
+          cl /O2 /Fe:slime_cmp.exe slime_cmp.c
+
+      - name: Package (Linux)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
+        run: |
+          mv slime_cmp slime_calculator_linux_${{ matrix.arch }}
+          mv slime_main slime_calculator_linux_${{ matrix.arch }}_main
+          mv slime_circle slime_calculator_linux_${{ matrix.arch }}_circle
+          zip ${{ matrix.artifact_name }}.zip slime_calculator_linux_${{ matrix.arch }} slime_calculator_linux_${{ matrix.arch }}_main slime_calculator_linux_${{ matrix.arch }}_circle
+
+      - name: Package (Windows amd64)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          rename-item slime_cmp.exe slime_calculator_windows_amd64.exe
+          rename-item slime_main.exe slime_calculator_windows_amd64_main.exe
+          rename-item slime_circle.exe slime_calculator_windows_amd64_circle.exe
+          Compress-Archive -Path slime_calculator_windows_amd64.exe, slime_calculator_windows_amd64_main.exe, slime_calculator_windows_amd64_circle.exe -DestinationPath ${{ matrix.artifact_name }}.zip
+
+      - name: Package (Windows ARM64)
+        if: matrix.os == 'windows-11-arm'
+        shell: pwsh
+        run: |
+          rename-item slime_cmp.exe slime_calculator_windows_arm64.exe
+          Compress-Archive -Path slime_calculator_windows_arm64.exe -DestinationPath ${{ matrix.artifact_name }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: slime-calculator-${{ matrix.artifact_name }}
-          path: |
-            slime_cmp${{ matrix.ext }}
-            slime_main${{ matrix.ext }}
-            slime_circle${{ matrix.ext }}
-          if-no-files-found: warn
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}.zip
 
   release:
     needs: build
