@@ -75,6 +75,14 @@ x,z,slime_count
 x,z,slime_count,distance
 ```
 
+### test
+
+一个论证工具，用于证明 Java 的 `nextInt` 拒绝采样最多只需要一次迭代。枚举所有坏种子（8 个可能的 `u` 值 × 2¹⁷ 个低比特组合），然后对种子图做 DFS 计算最长连续坏种子链。结果为 1，说明没有坏种子会生成另一个坏种子，因此 CUDA kernel 中的 `do-while` 可以安全地替换为 `if`。
+
+```bash
+./build/test
+```
+
 ## 完整流程
 
 ```

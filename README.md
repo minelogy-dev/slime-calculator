@@ -75,6 +75,14 @@ Output:
 x,z,slime_count,distance
 ```
 
+### test
+
+A validation tool that proves Java's `nextInt` rejection sampling requires at most one iteration. Enumerates all bad seeds (8 possible `u` values × 2¹⁷ low bits) and performs DFS on the seed graph to compute the longest chain of consecutive bad seeds. The result is 1, confirming that no bad seed produces another bad seed, so a `do-while` loop is unnecessary and can be safely replaced with an `if` in the CUDA kernel.
+
+```bash
+./build/test
+```
+
 ## Pipeline
 
 ```
