@@ -403,8 +403,10 @@ int main(int argc, char* argv[]) {
     size_t free_mem, total_mem;
     CUDA_CHECK(cudaGetDeviceCount(&device_count));
     // 输出设备数
-    int64_t H_maxes[device_count];
-    std::vector<HitResult> results[device_count];
+    int64_t *H_maxes;
+    H_maxes = new int64_t[device_count];
+    std::vector<HitResult> *results;
+    results = new std::vector<HitResult>[device_count];
     for (int i = 0; i < device_count; i++) {
         CUDA_CHECK(cudaSetDevice(i));
         CUDA_CHECK(cudaMemGetInfo(&free_mem, &total_mem));
