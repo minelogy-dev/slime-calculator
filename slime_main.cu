@@ -245,9 +245,9 @@ class GPUWorker {
             int64_t maxWindowsPerCol = blockHeight - sizeZ + 1;  // 单列窗口数
 
             // 试探批次列数：不超过“密度=1”时的安全列数
-int64_t maxSafeCols = MAX_BATCH_OUTPUT / maxWindowsPerCol;
-if (maxSafeCols < 1) maxSafeCols = 1;
-int64_t probeCols = min(maxSafeCols, (int64_t)rangeX);
+            int64_t maxSafeCols = MAX_BATCH_OUTPUT / maxWindowsPerCol;
+            if (maxSafeCols < 1) maxSafeCols = 1;
+            int64_t probeCols = min(maxSafeCols, (int64_t)rangeX);
 
             int colStart = 0;          // 全局已处理列偏移
             int64_t totalHits = 0;     // 累计命中数（用于日志）
@@ -274,9 +274,9 @@ int64_t probeCols = min(maxSafeCols, (int64_t)rangeX);
                                           numValid * sizeof(HitResult), cudaMemcpyDeviceToHost));
                     output->insert(output->end(), h_results, h_results + numValid);
                 }
-    totalHits = numValid;
-    totalWindows = probeCols * maxWindowsPerCol;
-    colStart = (int)probeCols;
+                totalHits = numValid;
+                totalWindows = probeCols * maxWindowsPerCol;
+                colStart = (int)probeCols;
             }
 
             // 后续批次：基于密度 + 硬限制
@@ -296,7 +296,7 @@ int64_t probeCols = min(maxSafeCols, (int64_t)rangeX);
                     batchCols = (int64_t)colsDouble;
 
                     // 硬性安全帽：绝不能超过密度=1时的列数
-                    //if (batchCols > maxSafeCols) batchCols = maxSafeCols;
+                    // if (batchCols > maxSafeCols) batchCols = maxSafeCols;
                     if (batchCols > remainingCols) batchCols = remainingCols;
 
                     // 避免碎片化：至少保证一些 block
@@ -337,101 +337,6 @@ int64_t probeCols = min(maxSafeCols, (int64_t)rangeX);
                     fillRatio = 0.8;
                 }
             }
-
-            /*
-            // 2. 自适应分批滑动窗口
-            int rangeX = width - sizeX + 1;
-            int64_t maxWindowsPerCol = blockHeight - sizeZ + 1;  // 单列窗口数
-
-            // ----- 试探批次：严格保证处理矩形数 ≤ MAX_BATCH_OUTPUT -----
-            int64_t maxSafeWindows = MAX_BATCH_OUTPUT;  // 试探阶段最多检测这么多窗口
-            int64_t probeCols = maxSafeWindows / maxWindowsPerCol;
-            if (probeCols < 1) probeCols = 1;
-            if (probeCols > rangeX) probeCols = rangeX;
-
-            int colStart = 0;
-            int64_t totalHits;
-            if (probeCols > 0) {
-                CUDA_CHECK(cudaMemset(d_pos, 0, sizeof(int)));
-                int gridSw = (int)((probeCols + 255) / 256);
-                slidingWindowOutputKernel<<<gridSw, 256>>>(
-                    d_row_ps, width, (int)blockHeight, sizeX, sizeZ,
-                    threshold, startX, (int)blockStartZ,
-                    (int)validStartZ, (int)validEndZ, (int)probeCols,
-                    d_results, d_pos);
-                CUDA_CHECK(cudaDeviceSynchronize());
-                int numValid;
-                CUDA_CHECK(cudaMemcpy(&numValid, d_pos, sizeof(int), cudaMemcpyDeviceToHost));
-                // 此时 numValid ≤ MAX_BATCH_OUTPUT 一定成立（因为窗口数不超）
-                if (numValid > 0) {
-                    CUDA_CHECK(cudaMemcpy(h_results, d_results,
-                                          numValid * sizeof(HitResult), cudaMemcpyDeviceToHost));
-                    output->insert(output->end(), h_results, h_results + numValid);
-                }
-
-                // 累积统计
-                totalHits = numValid;
-                int64_t totalWindows = probeCols * maxWindowsPerCol;
-                colStart = (int)probeCols;
-
-                // 后续批次：根据累积密度动态调整
-                double fillRatio = 0.8;
-                const int64_t SUFFICIENT_WINDOWS = 5 * probeCols * maxWindowsPerCol;
-
-                while (colStart < rangeX) {
-                    double density = (totalWindows > 0) ? (double)totalHits / totalWindows : 0.0;
-                    int64_t remainingCols = rangeX - colStart;
-                    int64_t batchCols;
-
-                    if (density <= 0.0) {
-                        batchCols = remainingCols;  // 无命中，一次扫完剩余
-                    } else {
-                        int64_t maxAllowedHits = (int64_t)(MAX_BATCH_OUTPUT * fillRatio);
-                        // 由允许的最大命中数反推列数
-                        double colsDouble = (double)maxAllowedHits / (density * maxWindowsPerCol);
-                        if (colsDouble < 1.0) colsDouble = 1.0;
-                        batchCols = min((int64_t)colsDouble, remainingCols);
-
-                        // 防止过度碎片化：至少保证一定数量的 block
-                        const int64_t MIN_COLS = 256 * 50;  // 50 个 block
-                        if (batchCols < MIN_COLS) batchCols = min(MIN_COLS, remainingCols);
-                    }
-
-                    int batchRangeX = (int)batchCols;
-                    printf("StartX:%d\n", startX);
-                    CUDA_CHECK(cudaMemset(d_pos, 0, sizeof(int)));
-                    int gridSw = (batchRangeX + 255) / 256;
-                    slidingWindowOutputKernel<<<gridSw, 256>>>(
-                        d_row_ps, width, (int)blockHeight, sizeX, sizeZ,
-                        threshold, startX + colStart, (int)blockStartZ,
-                        (int)validStartZ, (int)validEndZ, batchRangeX,
-                        d_results, d_pos);
-                    CUDA_CHECK(cudaDeviceSynchronize());
-
-                    int numValid;
-                    CUDA_CHECK(cudaMemcpy(&numValid, d_pos, sizeof(int), cudaMemcpyDeviceToHost));
-                    //printf("num:%d\n", numValid);
-                    if (numValid > MAX_BATCH_OUTPUT) {
-                        // 理论上不会发生，但保留保护
-                        fprintf(stderr, "Batch overflow! %d > %lld\n", numValid, MAX_BATCH_OUTPUT);
-                        exit(EXIT_FAILURE);
-                    }
-
-                    if (numValid > 0) {
-                        CUDA_CHECK(cudaMemcpy(h_results, d_results,
-                                              numValid * sizeof(HitResult), cudaMemcpyDeviceToHost));
-                        output->insert(output->end(), h_results, h_results + numValid);
-                    }
-
-                    totalHits += numValid;
-                    totalWindows += batchCols * maxWindowsPerCol;
-                    colStart += batchCols;
-
-                    if (totalWindows >= SUFFICIENT_WINDOWS) {
-                        fillRatio = 0.9;
-                    }
-                }
-            }*/
 
             CUDA_CHECK(cudaEventRecord(ev_stop));
             CUDA_CHECK(cudaEventSynchronize(ev_stop));
@@ -512,7 +417,8 @@ int main(int argc, char* argv[]) {
         // 输出设备基本信息，如名称，显存大小，已用大小
     }
 
-    int64_t offset[device_count];
+    int64_t *offset;
+    offset = new int64_t[device_count];
     offset[0] = 0;
     int64_t total_width = 0;
     for (int i = 0; i < device_count; ++i) {
@@ -538,7 +444,8 @@ int main(int argc, char* argv[]) {
         height = endZ - startZ + 1;
     }
 
-    GPUWorker workers[device_count];
+    GPUWorker *workers;
+    workers = new GPUWorker[device_count];
     for (int i = 0; i < device_count; ++i) {
         workers[i] = GPUWorker(i, results + i, H_maxes[i], offset[i]);
     }
