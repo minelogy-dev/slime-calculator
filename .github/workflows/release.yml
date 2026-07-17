@@ -59,9 +59,14 @@ jobs:
       - name: Build (Linux)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: |
-          gcc -o slime_cmp slime_cmp.c -lm -O3
-          nvcc -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
-          nvcc -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            COMMON_FLAGS="-D__ARM_VEC_MATH_DISABLED=1"
+          else
+            COMMON_FLAGS=""
+          fi
+          gcc $COMMON_FLAGS -o slime_cmp slime_cmp.c -lm -O3
+          nvcc $COMMON_FLAGS -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
+          nvcc $COMMON_FLAGS -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
 
       - name: Build (Windows amd64)
         if: matrix.os == 'windows-latest'
@@ -80,7 +85,6 @@ jobs:
       - name: Package (Linux)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: |
-          COMMON_FLAGS="-D__ARM_VEC_MATH_DISABLED=1"
           mv slime_cmp slime_calculator_linux_${{ matrix.arch }}
           mv slime_main slime_calculator_linux_${{ matrix.arch }}_main
           mv slime_circle slime_calculator_linux_${{ matrix.arch }}_circle
