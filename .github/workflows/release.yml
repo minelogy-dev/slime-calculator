@@ -26,9 +26,6 @@ jobs:
           - os: windows-latest
             artifact_name: slime_calculator-windows-amd64
             arch: amd64
-          - os: windows-11-arm
-            artifact_name: slime_calculator-windows-arm64
-            arch: arm64
 
     runs-on: ${{ matrix.os }}
 
@@ -53,7 +50,7 @@ jobs:
           sudo apt-get install -y nvidia-cuda-toolkit
 
       - name: Setup MSVC (Windows)
-        if: matrix.os == 'windows-latest' || matrix.os == 'windows-11-arm'
+        if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build (Linux)
@@ -61,22 +58,16 @@ jobs:
         run: |
           COMMON_FLAGS="-D__ARM_VEC_MATH_DISABLED=1"
           gcc $COMMON_FLAGS -o slime_cmp slime_cmp.c -lm -O3
-          nvcc $COMMON_FLAGS -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
-          nvcc $COMMON_FLAGS -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
+          nvcc -Xcompiler "$COMMON_FLAGS" -o slime_main slime_main.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
+          nvcc -Xcompiler "$COMMON_FLAGS" -o slime_circle slime_circle.cu -O3 -use_fast_math $CUDA_ARCH -std=c++20
 
       - name: Build (Windows amd64)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          cl /O2 /Fe:slime_cmp.exe slime_cmp.c
-          nvcc -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
-          nvcc -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
-
-      - name: Build (Windows ARM64)
-        if: matrix.os == 'windows-11-arm'
-        shell: pwsh
-        run: |
-          cl /O2 /Fe:slime_cmp.exe slime_cmp.c
+          cl /O2 /Oi /Ot /Fe:slime_cmp.exe slime_cmp.c
+          nvcc -Xcompiler="/O2 /Oi /Ot" -o slime_main.exe slime_main.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
+          nvcc -Xcompiler="/O2 /Oi /Ot" -o slime_circle.exe slime_circle.cu -O3 -use_fast_math $env:CUDA_ARCH -std=c++20
 
       - name: Package (Linux)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
@@ -94,13 +85,6 @@ jobs:
           rename-item slime_main.exe slime_calculator_windows_amd64_main.exe
           rename-item slime_circle.exe slime_calculator_windows_amd64_circle.exe
           Compress-Archive -Path slime_calculator_windows_amd64.exe, slime_calculator_windows_amd64_main.exe, slime_calculator_windows_amd64_circle.exe -DestinationPath ${{ matrix.artifact_name }}.zip
-
-      - name: Package (Windows ARM64)
-        if: matrix.os == 'windows-11-arm'
-        shell: pwsh
-        run: |
-          rename-item slime_cmp.exe slime_calculator_windows_arm64.exe
-          Compress-Archive -Path slime_calculator_windows_arm64.exe -DestinationPath ${{ matrix.artifact_name }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
