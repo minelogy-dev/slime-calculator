@@ -80,6 +80,7 @@ jobs:
       - name: Package (Linux)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: |
+          COMMON_FLAGS="-D__ARM_VEC_MATH_DISABLED=1"
           mv slime_cmp slime_calculator_linux_${{ matrix.arch }}
           mv slime_main slime_calculator_linux_${{ matrix.arch }}_main
           mv slime_circle slime_calculator_linux_${{ matrix.arch }}_circle

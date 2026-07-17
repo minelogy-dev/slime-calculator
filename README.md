@@ -37,7 +37,7 @@ The four vertices of the specified rectangle are strictly guaranteed to be withi
 
 ### Performance
 
-On an RTX 4060 Ti 16 GB, the following command takes ~10 minutes:
+On an RTX 4060 Ti 16 GB, the following command takes ~5 minutes:
 
 ```bash
 ./build/slime_main 114514 -1875000 -1875000 1875000 1875000 17 17 55 output.csv

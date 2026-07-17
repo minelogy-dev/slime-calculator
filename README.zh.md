@@ -37,7 +37,7 @@ cd slime-calculator
 
 ### 性能
 
-在 RTX 4060 Ti 16GB 上，以下命令约需 10 分钟：
+在 RTX 4060 Ti 16GB 上，以下命令约需 5 分钟：
 
 ```bash
 ./build/slime_main 114514 -1875000 -1875000 1875000 1875000 17 17 55 output.csv
