@@ -31,7 +31,7 @@ Primary rectangular-area slime chunk scanner with CUDA.
 ./build/slime_main <seed> <startX> <startZ> <endX> <endZ> <sizeX> <sizeZ> <threshold> <output.csv>
 ```
 
-Scans the area `(startX, startZ)`–`(endX, endZ)` for all rectangles of size `sizeX` × `sizeZ` containing more than `threshold` slime chunks. Coordinates are in chunk coordinates (integers). Dynamically tiles the search along Z to fit GPU memory.
+Scans the area `(startX, startZ)`–`(endX, endZ)` for all rectangles of size `sizeX` × `sizeZ` containing more than `threshold` slime chunks. Coordinates are in chunk coordinates (integers). Both `sizeX` and `sizeZ` must be ≤ 32. Dynamically tiles the search along Z to fit GPU memory.
 
 The four vertices of the specified rectangle are strictly guaranteed to be within the search range. However, the actual region used internally is rounded up to multiples of 256 for GPU memory alignment, which may slightly expand the scanned area beyond the specified bounds.
 

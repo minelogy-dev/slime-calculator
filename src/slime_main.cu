@@ -132,7 +132,7 @@ __global__ void slidingWindowOutputKernel(
     int right = globalJ + sizeX - 1;
     int x = startX + j;  // startX 已是本批次起始区块坐标，加局部 j 即全局区块坐标
 
-    int sum = 0, winVals[20], ringIdx = 0;
+    int sum = 0, winVals[32], ringIdx = 0;
     for (int row = 0; row < sizeZ; ++row) {
         int val = 0;
         int tileL = left / TILE_WIDTH, tileR = right / TILE_WIDTH;
@@ -342,8 +342,8 @@ class GPUWorker {
             CUDA_CHECK(cudaEventSynchronize(ev_stop));
             float ms;
             CUDA_CHECK(cudaEventElapsedTime(&ms, ev_start, ev_stop));
-            printf("Block Z[%" PRId64 ",%" PRId64 "] height %" PRId64 ", valid Z[%" PRId64 ",%" PRId64 "] -> %d valid, %.2f ms\n",
-                   blockStartZ, blockEndZ, blockHeight, validStartZ, validEndZ, totalHits, ms);
+            printf("GPU:%-2d Block Z[%" PRId64 ",%" PRId64 "] height %" PRId64 ", valid Z[%" PRId64 ",%" PRId64 "] -> %d valid, %.2f ms\n",
+                   device_id, blockStartZ, blockEndZ, blockHeight, validStartZ, validEndZ, totalHits, ms);
             gpu_time_ms += ms;
         }
         CUDA_CHECK(cudaFree(d_baseX));
@@ -403,9 +403,9 @@ int main(int argc, char* argv[]) {
     size_t free_mem, total_mem;
     CUDA_CHECK(cudaGetDeviceCount(&device_count));
     // 输出设备数
-    int64_t *H_maxes;
+    int64_t* H_maxes;
     H_maxes = new int64_t[device_count];
-    std::vector<HitResult> *results;
+    std::vector<HitResult>* results;
     results = new std::vector<HitResult>[device_count];
     for (int i = 0; i < device_count; i++) {
         CUDA_CHECK(cudaSetDevice(i));
@@ -416,10 +416,15 @@ int main(int argc, char* argv[]) {
         if (H_maxes[i] < sizeZ) H_maxes[i] = sizeZ;
         if (H_maxes[i] > height) H_maxes[i] = height;
         H_maxes[i] &= ~255LL;
-        // 输出设备基本信息，如名称，显存大小，已用大小
+        cudaDeviceProp prop;
+        CUDA_CHECK(cudaGetDeviceProperties(&prop, i));
+        printf("Device %d: %s\n", i, prop.name);
+        printf("  Total memory: %.2f MB\n", total_mem / (1024.0 * 1024.0));
+        printf("  Free memory : %.2f MB\n", free_mem / (1024.0 * 1024.0));
+        printf("  Used memory : %.2f MB\n", (total_mem - free_mem) / (1024.0 * 1024.0));
     }
 
-    int64_t *offset;
+    int64_t* offset;
     offset = new int64_t[device_count];
     offset[0] = 0;
     int64_t total_width = 0;
@@ -446,7 +451,7 @@ int main(int argc, char* argv[]) {
         height = endZ - startZ + 1;
     }
 
-    GPUWorker *workers;
+    GPUWorker* workers;
     workers = new GPUWorker[device_count];
     for (int i = 0; i < device_count; ++i) {
         workers[i] = GPUWorker(i, results + i, H_maxes[i], offset[i]);

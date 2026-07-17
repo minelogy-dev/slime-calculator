@@ -18,12 +18,12 @@ set -euo pipefail
 mkdir -p build
 
 echo "=== Building slime_cmp (C) ==="
-gcc -o build/slime_cmp slime_cmp.c -lm -O3 -march=native -mtune=native -flto -fwhole-program
+gcc -o build/slime_cmp src/slime_cmp.c -lm -O3 -march=native -mtune=native -flto -fwhole-program
 
 echo "=== Building slime_main (CUDA) ==="
-nvcc -o build/slime_main slime_main.cu -O3 -use_fast_math -arch=native -Xcompiler="-O3 -march=native"
+nvcc -o build/slime_main src/slime_main.cu -O3 -use_fast_math ${CUDA_ARCH:--arch=native} -Xcompiler="-O3 -march=native"
 
 echo "=== Building slime_circle (CUDA) ==="
-nvcc -o build/slime_circle slime_circle.cu -O3 -use_fast_math -arch=native -Xcompiler="-O3 -march=native"
+nvcc -o build/slime_circle src/slime_circle.cu -O3 -use_fast_math ${CUDA_ARCH:--arch=native} -Xcompiler="-O3 -march=native"
 
 echo "Done. Binaries in build/"

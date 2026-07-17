@@ -31,7 +31,7 @@ cd slime-calculator
 ./build/slime_main <seed> <startX> <startZ> <endX> <endZ> <sizeX> <sizeZ> <threshold> <output.csv>
 ```
 
-在指定矩形区域 `(startX, startZ)`–`(endX, endZ)` 内搜索所有尺寸为 `sizeX` × `sizeZ`、包含超过 `threshold` 个史莱姆区块的矩形区域。坐标为区块坐标（整数）。沿 Z 方向动态分块以适应 GPU 显存。
+在指定矩形区域 `(startX, startZ)`–`(endX, endZ)` 内搜索所有尺寸为 `sizeX` × `sizeZ`、包含超过 `threshold` 个史莱姆区块的矩形区域。坐标为区块坐标（整数）。`sizeX` 和 `sizeZ` 均必须 ≤ 32。沿 Z 方向动态分块以适应 GPU 显存。
 
 选区的四个顶点严格保证在搜索范围内。但为了优化 GPU 显存对齐，内部实际使用的区域会向 256 取整，可能会略微扩大扫描范围。
 
