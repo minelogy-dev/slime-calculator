@@ -1,0 +1,11 @@
+==PROF== Connected to process 6173 (/mnt/ram/slime-calculator/build/slime_main)
+==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+Device 0: NVIDIA GeForce RTX 4060 Ti
+  Total memory: 15946.62 MB
+  Free memory : 15781.56 MB
+  Used memory : 165.06 MB
+  SM count: 34
+Global range: X[-131200,131199] Z[-32776,32775] -> [-131200,131199] Z[-32776,32775], rect 17x17, thr 60, sort off
+GPU:0  Block Z[-32776,32775] height 65552, valid Z[-32776,32759] -> 936 valid, 1 chunk(s), 0 redo, 42.84 ms
+Total valid: 936, GPU compute time: 42.84 ms, wall time: 436.59 ms
+==PROF== Disconnected from process 6173

@@ -1,2 +1,8 @@
 .vscode/
 build/
+.work/
+__pycache__/
+*.tar.gz
+.fullcheck/
+output.csv
+*.orig

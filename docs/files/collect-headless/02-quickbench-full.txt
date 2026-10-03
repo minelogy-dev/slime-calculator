@@ -1,0 +1,14 @@
+binary : /mnt/ram/slime-calculator/build/slime_main
+reps   : 3   seed=114514   sort=on
+
+workload             cells_M  reps    gpu_min   wall_min   B/s_gpu  B/s_wall    ratio   det
+---------------- ----------- ----- ---------- ---------- --------- --------- -------- -----
+rect17_300k          90000.6     3     222.87     327.50     403.8     274.8        -    ok
+xwide_2Mx32k         64002.0     3     156.77     258.92     408.3     247.2        -    ok
+ztall_32kx256k       16384.5     3      43.74     135.68     374.6     120.8        -    ok
+rect32_100k          10000.2     3      31.17     121.29     320.8      82.4        -    ok
+fullmap_14G       14062507.5     3   35583.09   37133.41     395.2     378.7        -    ok
+
+note: ratio = ref_gpu_min / bin_gpu_min, >1 means BIN is faster (interleaved A/B).
+      B/s is the declared-cells throughput; compare it only within one workload.
+      det=DIFF means the two binaries produced different hit counts -- timing is void.

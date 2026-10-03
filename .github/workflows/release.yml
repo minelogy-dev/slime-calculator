@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+  # 发版失败时可以手动重跑本工作流（选已有 tag 即可），不必删 tag 再推。
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -38,10 +40,11 @@ jobs:
 
       - name: Setup CUDA (x86_64)
         if: matrix.arch == 'amd64'
-        uses: Jimver/cuda-toolkit@v0.2.35
+        uses: Jimver/cuda-toolkit@v0.2.36
         id: cuda-toolkit
         with:
-          cuda: "13.2.0"
+          # 该 action 的版本表里最高到 13.3.1（没有 13.4）。
+          cuda: "13.3.1"
 
       - name: Verify CUDA
         if: matrix.arch == 'amd64'
@@ -70,16 +73,24 @@ jobs:
       - name: Package (Linux)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: |
-          mv build/slime_cmp build/slime_calculator_linux_${{ matrix.arch }}_cmp
-          mv build/slime_main build/slime_calculator_linux_${{ matrix.arch }}_main
-          mv build/slime_circle build/slime_calculator_linux_${{ matrix.arch }}_circle
-          zip ${{ matrix.artifact_name }}.zip build/*
+          mkdir -p pkg
+          mv build/slime_cmp    pkg/slime_calculator_linux_${{ matrix.arch }}_cmp
+          mv build/slime_main   pkg/slime_calculator_linux_${{ matrix.arch }}_main
+          mv build/slime_circle pkg/slime_calculator_linux_${{ matrix.arch }}_circle
+          # 只打包这三个产物：build/ 里可能还有中间文件，整目录打包会把它们一起发出去。
+          ( cd pkg && zip -r ../${{ matrix.artifact_name }}.zip . )
+          unzip -l ${{ matrix.artifact_name }}.zip
 
       - name: Package (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Compress-Archive -Path build/* -DestinationPath ${{ matrix.artifact_name }}.zip
+          New-Item -ItemType Directory -Force -Path pkg | Out-Null
+          Move-Item build/slime_cmp.exe    pkg/slime_calculator_windows_${{ matrix.arch }}_cmp.exe
+          Move-Item build/slime_main.exe   pkg/slime_calculator_windows_${{ matrix.arch }}_main.exe
+          Move-Item build/slime_circle.exe pkg/slime_calculator_windows_${{ matrix.arch }}_circle.exe
+          Compress-Archive -Path pkg/* -DestinationPath ${{ matrix.artifact_name }}.zip
+          Get-ChildItem pkg
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

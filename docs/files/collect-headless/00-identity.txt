@@ -1,0 +1,10 @@
+host        kamov
+date        2026-10-03T17:41:58Z
+pwd         /mnt/ram/slime-calculator
+nvcc        Build cuda_13.4.r13.4/compiler.38855100_0
+gcc         gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0
+git commit  7a79265
+src sha256  505a5930291a5688ed6b356199e0810f9ff8092b7bf182720409045dec98fe4e
+bin sha256  b190bea71298c621c51ca3a43e90bb66546892e5d8a57a6a1ae0d74a0bc119ee
+bin sass    8e245264d2816bb44e00e5341c4d2ada4ab9fddd8aa01b4afb01ebceea8c7632
+git status  53 modified path(s)

@@ -1,0 +1,101 @@
+== compile-time variants (pure CPU, no GPU lock taken)
+  [nvcc ] /mnt/ram/slime-calculator/.work/verify/slime_zsub1 -DSLIME_Z_SUB_ROWS=100000000 -DSLIME_Z_SPLIT_MIN_TILES=100000000  (CPU heavy, please wait)
+  [nvcc ] /mnt/ram/slime-calculator/.work/verify/slime_scan_only -DSLIME_SCAN_ONLY  (CPU heavy, please wait)
+  [nvcc ] /mnt/ram/slime-calculator/.work/verify/slime_k4 -DSLIME_K4_MIN_BLOCKS=0  (CPU heavy, please wait)
+== matrix: 54 entries; targets: ref new zsub1 k4 scanonly 
+== reference: .work/verify/ref_head  (59236e15c2f7)
+== under test: build/slime_main  (2412c2434d49)
+== reference integrity: OK (59236e15c2f7822f23bde2ad64e6dcce)
+[ref] /mnt/ram/slime-calculator/.work/verify/ref_head (cmp)
+[new] /mnt/ram/slime-calculator/build/slime_main (cmp)
+[zsub1] /mnt/ram/slime-calculator/.work/verify/slime_zsub1 (cmp)
+[k4] /mnt/ram/slime-calculator/.work/verify/slime_k4 (cmp)
+[scanonly] /mnt/ram/slime-calculator/.work/verify/slime_scan_only (runonly)
+worker done
+
+config           ref_rc new_rc ref_valid    new_valid    md5[0:8]   verdict note
+-------------------------------------------------------------------------------------------------
+shape_1x1        0     0     65536        65536        ab778b18   PASS  zsub1=OK 
+shape_1x32       0     0     57600        57600        ed40350e   PASS  zsub1=OK 
+shape_32x1       0     0     57600        57600        5e4a666a   PASS  zsub1=OK 
+shape_17x1       0     0     61440        61440        47990f64   PASS  zsub1=OK 
+shape_1x17       0     0     61440        61440        ec4ad174   PASS  zsub1=OK 
+shape_32x32      0     0     50625        50625        7f3a4638   PASS  zsub1=OK scanonly=OK 
+shape_33x17      0     0     53760        53760        3a447f33   PASS  zsub1=OK 
+shape_40x17      0     0     52080        52080        0a77df3a   PASS  zsub1=OK scanonly=OK 
+shape_17x32      0     0     54000        54000        d22eeddc   PASS  zsub1=OK 
+shape_17x19_ring 0     0     1945888      1945888      31fa2bd6   PASS  zsub1=OK 
+shape_17x20_ring 0     0     1937712      1937712      2e27b9a5   PASS  zsub1=OK 
+shape_17x21_ballot 0     0     1929536      1929536      1edcccae   PASS  zsub1=OK 
+shape_16x17_tail 0     0     38660        38660        83bb4f50   PASS  zsub1=OK 
+shape_17x17_algn 0     0     138261       138261       fac619ba   PASS  zsub1=OK 
+shape_29x17_algn 0     0     52449234     52449234     f2b9cd51   PASS  zsub1=OK 
+shape_30x17_fb   0     0     57254168     57254168     3730379b   PASS  zsub1=OK 
+shape_100x17     0     0     37680        37680        99898ef3   PASS  zsub1=OK 
+shape_255x32     0     0     450          450          915ee16b   PASS  zsub1=OK 
+thr_0            0     0     439920       439920       981b620f   PASS  zsub1=OK 
+thr_1            0     0     439920       439920       981b620f   PASS  zsub1=OK 
+thr_55           0     0     0            0            24fab784   PASS  zsub1=OK 
+thr_hi           0     0     0            0            24fab784   PASS  zsub1=OK 
+thr_hi_fb        0     0     0            0            24fab784   PASS  zsub1=OK 
+big_fused_45     0     0     284106       284106       d808923f   PASS  zsub1=OK 
+big_fb_90        0     0     1136440      1136440      c9ba2ea9   PASS  zsub1=OK scanonly=OK 
+coord_neg        0     0     56           56           b4ab1b96   PASS  zsub1=OK 
+coord_pos        0     0     117          117          411201cc   PASS  zsub1=OK 
+coord_mixed      0     0     0            0            24fab784   PASS  zsub1=OK 
+coord_nearmax    0     0     0            0            24fab784   PASS  zsub1=OK scanonly=OK 
+coord_nearmin    0     0     0            0            24fab784   PASS  zsub1=OK 
+coord_nearmax_fb 0     0     50442        50442        ba717873   PASS  zsub1=OK 
+reject_xbound    1     1     -            -            -          PASS  invalid input rejected consistently (rc=1)zsub1=OK 
+reject_sizeX     1     1     -            -            -          PASS  invalid input rejected consistently (rc=1)zsub1=OK 
+reject_sizeZ     1     1     -            -            -          PASS  invalid input rejected consistently (rc=1)zsub1=OK 
+reject_size0     1     1     -            -            -          PASS  invalid input rejected consistently (rc=1)zsub1=OK 
+reject_sortarg   1     1     -            -            -          PASS  invalid input rejected consistently (rc=1)zsub1=OK 
+rej_directed_1x1 0     0     6523         6523         f9e15180   PASS  ORACLE(ref: threshold above the window max but output is non-empty valid=6523 rows=6524) ORACLE(new: threshold above the window max but output is non-empty valid=6523 rows=6524) zsub1=OK scanonly=OK 
+rej_directed_17x17 0     0     57600        57600        10f0e51f   PASS  zsub1=OK 
+rej_directed_2   0     0     6545         6545         55e72605   PASS  ORACLE(ref: threshold above the window max but output is non-empty valid=6545 rows=6546) ORACLE(new: threshold above the window max but output is non-empty valid=6545 rows=6546) zsub1=OK 
+rej_directed_2b  0     0     57600        57600        149c4f7e   PASS  zsub1=OK 
+srt_fused_off    0     0     439920       439920       981b620f   PASS  zsub1=OK group[g_sort_fused]=same as thr_1 
+srt_fb_on        0     0     973680       973680       a3e54f18   PASS  zsub1=OK 
+srt_fb_off       0     0     973680       973680       a3e54f18   PASS  zsub1=OK scanonly=OK group[g_sort_fb]=same as srt_fb_on 
+srt_big_off      0     0     284106       284106       d808923f   PASS  zsub1=OK group[g_sort_big]=same as big_fused_45 
+cap_4096         0     0     979200       979200       fceb4332   PASS  zsub1=OK scanonly=OK 
+cap_65536        0     0     1016064      1016064      fc0ebadd   PASS  zsub1=OK 
+cap_4096_fb      0     0     973680       973680       a3e54f18   PASS  zsub1=OK 
+cap_4096_fbwide  0     0     1956720      1956720      ecc1b9cd   PASS  zsub1=OK 
+cap_16384_big    0     0     284106       284106       d808923f   PASS  zsub1=OK 
+cap_mid_fill     0     0     16498944     16498944     86bd679b   PASS  zsub1=OK 
+spill_2blk       0     0     20799744     20799744     5a0ddef5   PASS  zsub1=OK 
+spill_2blk_small 0     0     284106       284106       d808923f   PASS  zsub1=OK 
+seed_neg_min     0     0     57600        57600        a2e44c5e   PASS  zsub1=OK 
+seed_neg_12345   0     0     57600        57600        72b13817   PASS  zsub1=OK 
+
+== path-coverage evidence
+   -- buffer full -> discard and retry / spill to disk (redo = retries; runs = peak .runN segments)
+   cap_4096         ref(redo=7,runs=0) new(redo=7,runs=0) zsub1(redo=7,runs=0)
+   cap_65536        ref(redo=4,runs=0) new(redo=4,runs=0) zsub1(redo=4,runs=0)
+   cap_4096_fb      ref(redo=8,runs=0) new(redo=8,runs=0) zsub1(redo=8,runs=0)
+   cap_4096_fbwide  ref(redo=8,runs=0) new(redo=8,runs=0) zsub1(redo=8,runs=0)
+   cap_16384_big    ref(redo=5,runs=0) new(redo=5,runs=0) zsub1(redo=5,runs=0)
+   cap_mid_fill     ref(redo=8,runs=0) new(redo=8,runs=0) zsub1(redo=8,runs=0)
+   spill_2blk       ref(redo=0,runs=3) new(redo=0,runs=3) zsub1(redo=0,runs=3)
+   -- multiple Z blocks / multiple batches (blocks = kernel Z-block iterations; chunks = total batches)
+   thr_hi_fb        ref(blocks=2,chunks=2) new(blocks=2,chunks=2)
+   big_fb_90        ref(blocks=2,chunks=2) new(blocks=2,chunks=2)
+   cap_4096         ref(blocks=1,chunks=240) new(blocks=1,chunks=240)
+   cap_65536        ref(blocks=1,chunks=16) new(blocks=1,chunks=16)
+   cap_4096_fb      ref(blocks=1,chunks=239) new(blocks=1,chunks=239)
+   cap_4096_fbwide  ref(blocks=1,chunks=248) new(blocks=1,chunks=248)
+   cap_16384_big    ref(blocks=1,chunks=31) new(blocks=1,chunks=31)
+   cap_mid_fill     ref(blocks=1,chunks=252) new(blocks=1,chunks=252)
+
+== summary
+   entries       : 54 (targets: ref new zsub1 k4 scanonly )
+   passed/failed : 54 / 0
+   oracle warns  : 4
+   program time  : 55.6 s (sum over all targets/entries, excl. sort and hash)
+   lock+cooldown : 0.0 s (longer when another job holds the lock -- expected)
+   matrix+hash   : 257.4 s (inside the lock: run + sort + md5)
+   total wall    : 257.4 s
+   log directory : .work/verify/result/logs
+   verdict       : PASS (every configuration matches the reference byte for byte)

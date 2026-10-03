@@ -1,0 +1,1 @@
+gpu=NVIDIA_GeForce_RTX_4060_Ti driver=595.91.07 temp=28C/35C sm=210MHz/2340 mem=405MHz/9001 power=19.25W/165.00W util=0% vram=10MiB/16380MiB state=NOT_READY

@@ -1,0 +1,14 @@
+--------------------------------------------------------------------------
+ GPU status
+--------------------------------------------------------------------------
+  device         NVIDIA GeForce RTX 4060 Ti
+  driver         595.91.07
+  temperature    28 C         [target 35 C]  OK
+  SM clock       210 MHz      [target 2340]     NOT MET (want 2340)
+  memory clock   405 MHz      [target 9001]    NOT MET (want 9001)
+  power          19.25 W / 165.00 W
+  utilization    0 %
+  memory         10 MiB / 16380 MiB
+  throttling     Not Active, Not Active, Not Active
+  state          NOT READY (standard test state)
+--------------------------------------------------------------------------

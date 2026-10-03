@@ -1,0 +1,39 @@
+===================================================================
+ quickcheck for slime_main
+   binary : /mnt/ram/slime-calculator/build/slime_main
+   oracle : /mnt/ram/slime-calculator/.work/quickcheck/oracle
+===================================================================
+
+[0] oracle self-test (two independent summation methods must agree)
+    ok   naive and rolling-window oracle agree on 6 shapes
+
+[1] fused kernel (sizeX <= 32)
+  fused_17x17                        ok   rows=14484 thr=39
+  fused_multitile                    ok   rows=12293 thr=48
+  fused_multichunk                   ok   rows=19404 thr=47
+  fused_1x17                         ok   rows=14415 thr=3
+  fused_17x1                         ok   rows=14607 thr=3
+  fused_32x32                        ok   rows=16754 thr=120
+  fused_17x32                        ok   rows=18149 thr=67
+  fused_small_1x1                    ok   rows=6535 thr=1
+  fused_thr_fixed                    ok   rows=25161 thr=30
+
+[2] fallback kernel (sizeX > 32)
+  fb_33x17                           ok   rows=14546 thr=78
+  fb_40x17                           ok   rows=15348 thr=92
+  fb_255x32                          ok   rows=19976 thr=876
+
+[3] coordinates and thresholds
+  neg_seed                           ok   rows=15741 thr=39
+  world_corner                       ok   rows=57600 thr=3
+  thr_zero                           ok   rows=64516 thr=0
+  thr_high_empty                     ok   rows=0 thr=999999
+
+[4] forced internal paths
+  cap_small                          ok   rows=12293 thr=48
+  cap_tiny                           ok   rows=14653 thr=44
+
+===================================================================
+ passed: 19    failed: 0    skipped: 0
+ RESULT: PASS
+===================================================================
