@@ -1,5 +1,7 @@
 # Slime Calculator
 
+**English** | [简体中文](README.zh.md)
+
 Minecraft slime chunk finder with CUDA acceleration. Supports Java Edition only.
 
 ## Quick Start

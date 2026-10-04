@@ -1,5 +1,7 @@
 # Slime Calculator / 史莱姆计算器
 
+[English](README.md) | **简体中文**
+
 基于 CUDA 的 Minecraft 史莱姆区块查找器。仅支持 Java 版。
 
 ## 快速开始
