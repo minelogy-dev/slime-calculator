@@ -143,3 +143,7 @@ slime_main  <seed> <area> <rect> <threshold>  → candidates.csv
 slime_circle candidates.csv <radius> <rect> <seed> <threshold>  → circles.csv
 slime_cmp   circles.csv <distance> <threshold>  → result.csv
 ```
+
+## 致谢
+
+感谢 [OvOliziOvO/slime](https://github.com/OvOliziOvO/slime/) 在思路上给予的指点。
